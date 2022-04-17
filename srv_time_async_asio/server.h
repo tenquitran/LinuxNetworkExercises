@@ -13,6 +13,8 @@ public:
 	
 	void handleClient();
 	
+	void stop();
+	
 	Server(const Server&) = delete;
 	Server& operator=(const Server&) = delete;
 	
@@ -22,7 +24,9 @@ private:
 	void onAccept(const boost::system::error_code& err, 
 		boost::asio::ip::tcp::socket& sock);
 
-	void stop();
+	void close();
+	
+	void handleClientInternal(boost::asio::ip::tcp::socket& sock);
 	
 private:
 	const unsigned short m_port;

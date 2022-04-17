@@ -18,10 +18,15 @@ Server::Server(unsigned short port)
 
 Server::~Server()
 {
-	//m_acceptor.close();
+	close();
 }
 
 void Server::stop()
+{
+	m_shouldStop.store(true);
+}
+
+void Server::close()
 {
 	m_acceptor.close();
 }
@@ -46,7 +51,7 @@ void Server::onAccept(const boost::system::error_code& err,
 {
 	if (0 == err.value())
 	{
-		// TODO: handle the client
+		handleClientInternal(sock);
 	}
 	else
 	{
@@ -59,7 +64,12 @@ void Server::onAccept(const boost::system::error_code& err,
 	}
 	else
 	{
-		stop();
+		close();
 	}
+}
+
+void Server::handleClientInternal(boost::asio::ip::tcp::socket& sock)
+{
+	// TODO: stub
 }
 
