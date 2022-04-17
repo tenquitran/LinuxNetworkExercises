@@ -37,13 +37,34 @@ int main(int argc, char* argv[])
 		asio::ip::tcp::endpoint ep(
 			asio::ip::address::from_string(ipAddress), 
 			port);
+
+		asio::ip::tcp protocol = asio::ip::tcp::v4();
 		
 		asio::io_service io;
 		
-		asio::ip::tcp protocol = asio::ip::tcp::v4();
+		asio::ip::tcp::socket sock(io, protocol);
+
+#if 1
+		sock.connect(ep);
+#else
+		// TODO: temp, async connect
+		sock.async_connect(ep, 
+			[] (const system::error_code& err) {
+				if (0 != err.value())
+				{
+					std::cerr << "Connection error: " << err.message() << '\n';
+				}
+				else
+				{
+					std::cout << "Connected" << std::endl;
+				}
+			});
 		
-		asio::ip::tcp::socket sock = asio::ip::tcp::socket(io, protocol);
-		
+		std::cout << "After async_connect()" << std::endl;
+		sleep(5);
+		return 0;    // TODO: temp
+#endif
+
 		std::string response = receiveData(sock);
 		
 		if (response.empty())
@@ -120,9 +141,10 @@ std::string receiveData(asio::ip::tcp::socket& sock)
 			std::cerr << __FUNCTION__ 
 			          << ": receive error: expected " <<  TimeMessageLength << " bytes, "
 			          << "received " << cbReceived << " bytes\n";
-			
 			return "";
 		}
+		
+		std::cout << cbReceived << " bytes received from the server" << std::endl;
 
 		received.reserve(cbReceived);
 
