@@ -11,7 +11,7 @@ public:
 	
 	virtual ~Server();
 	
-	void handleClient();
+	void start();
 	
 	void stop();
 	
@@ -19,14 +19,14 @@ public:
 	Server& operator=(const Server&) = delete;
 	
 private:
-	void accept(boost::asio::ip::tcp::socket& sock);
-	
+	void startAccepting();
+
 	void onAccept(const boost::system::error_code& err, 
 		boost::asio::ip::tcp::socket& sock);
 
 	void close();
 	
-	void handleClientInternal(boost::asio::ip::tcp::socket& sock);
+	void handleClient(boost::asio::ip::tcp::socket& sock);
 	
 private:
 	const unsigned short m_port;

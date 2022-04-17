@@ -21,6 +21,13 @@ Server::~Server()
 	close();
 }
 
+void Server::start()
+{
+	m_acceptor.listen();
+	
+	startAccepting();
+}
+
 void Server::stop()
 {
 	m_shouldStop.store(true);
@@ -31,15 +38,10 @@ void Server::close()
 	m_acceptor.close();
 }
 
-void Server::handleClient()
+void Server::startAccepting()
 {
 	asio::ip::tcp::socket sock = asio::ip::tcp::socket(m_io);
 	
-	accept(sock);
-}
-
-void Server::accept(asio::ip::tcp::socket& sock)
-{
 	m_acceptor.async_accept(sock, 
 		[this, &sock] (const system::error_code& err) {
 			onAccept(err, sock);
@@ -51,24 +53,24 @@ void Server::onAccept(const boost::system::error_code& err,
 {
 	if (0 == err.value())
 	{
-		handleClientInternal(sock);
+		handleClient(sock);
 	}
 	else
 	{
 		std::cerr << __FUNCTION__ << ": error: " << err.message() << '\n';
 	}
 	
-	if (!m_shouldStop.load())
-	{
-		accept(sock);
-	}
-	else
+	if (m_shouldStop.load())
 	{
 		close();
 	}
+	else
+	{
+		startAccepting();
+	}
 }
 
-void Server::handleClientInternal(boost::asio::ip::tcp::socket& sock)
+void Server::handleClient(boost::asio::ip::tcp::socket& sock)
 {
 	// TODO: stub
 }
