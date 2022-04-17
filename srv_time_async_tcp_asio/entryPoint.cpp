@@ -34,8 +34,17 @@ int main(int argc, char* argv[])
 		return 2;
 	}
 	
-	// TODO: are there any exceptions possible?
-	Server srv(port);
+	try
+	{
+		Server srv(port);
+		
+		// TODO: ...
+	}
+	catch (system::system_error& ex)
+	{
+		std::cerr << "Exception: " << ex.what() << '\n';
+		return 3;
+	}
 
 	return 0;
 }

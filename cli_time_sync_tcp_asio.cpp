@@ -1,5 +1,7 @@
 #include <iostream>
+#include <string>
 #include <boost/asio.hpp>
+#include "common.h"
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -13,11 +15,14 @@ bool parseArguments(
 	int argc, char* argv[],
 	std::string& ipAddress, unsigned short& port);
 
+std::string receiveData(asio::ip::tcp::socket& sock);
+
 ///////////////////////////////////////////////////////////////////////
 
 
 int main(int argc, char* argv[])
 {
+	// IP address and port of the server.
 	std::string ipAddress;
 	unsigned short port = {};
 
@@ -27,7 +32,38 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	;
+	try
+	{
+		asio::ip::tcp::endpoint ep(
+			asio::ip::address::from_string(ipAddress), 
+			port);
+		
+		asio::io_service io;
+		
+		asio::ip::tcp protocol = asio::ip::tcp::v4();
+		
+		asio::ip::tcp::socket sock = asio::ip::tcp::socket(io, protocol);
+		
+		std::string response = receiveData(sock);
+		
+		if (response.empty())
+		{
+			std::cerr << "Failed to receive response from the server\n";
+		}
+		else
+		{
+			std::cout << "Server response: " << response << std::endl;
+		}
+		
+		sock.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
+		
+		sock.close();
+	}
+	catch (system::system_error& ex)
+	{
+		std::cerr << "Exception: " << ex.what() << '\n';
+		return 2;
+	}
 
 	return 0;
 }
@@ -65,5 +101,42 @@ bool parseArguments(int argc, char* argv[],
 	}
 	
 	return true;
+}
+
+std::string receiveData(asio::ip::tcp::socket& sock)
+{
+	std::string received;
+
+	try
+	{
+		std::vector<char> buff(TimeMessageLength);
+	
+		std::size_t cbReceived = sock.receive(
+			boost::asio::buffer(buff),
+			0);
+			
+		if (cbReceived < TimeMessageLength)
+		{
+			std::cerr << __FUNCTION__ 
+			          << ": receive error: expected " <<  TimeMessageLength << " bytes, "
+			          << "received " << cbReceived << " bytes\n";
+			
+			return "";
+		}
+
+		received.reserve(cbReceived);
+
+		for (auto c : buff)
+		{
+			received += c;
+		}
+	}
+	catch (system::system_error& ex)
+	{
+		std::cerr << __FUNCTION__ << ": exception: " << ex.what() << '\n';
+		return "";
+	}
+	
+	return received;
 }
 
