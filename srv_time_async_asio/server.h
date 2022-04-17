@@ -17,10 +17,12 @@ public:
 	Server& operator=(const Server&) = delete;
 	
 private:
-	bool accept(boost::asio::ip::tcp::socket& sock);
+	void accept(boost::asio::ip::tcp::socket& sock);
 	
 	void onAccept(const boost::system::error_code& err, 
 		boost::asio::ip::tcp::socket& sock);
+
+	void stop();
 	
 private:
 	const unsigned short m_port;
@@ -30,6 +32,8 @@ private:
 	boost::asio::ip::tcp::endpoint m_endpoint;
 	
 	boost::asio::ip::tcp::acceptor m_acceptor;
+	
+	std::atomic<bool> m_shouldStop;
 };
 
 #endif
