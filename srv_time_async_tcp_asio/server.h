@@ -30,9 +30,6 @@ private:
 	
 	void handleClient(boost::asio::ip::tcp::socket& sock);
 	
-	// TODO: temp
-	static void onSent(const boost::system::error_code& err, std::size_t cbSent);
-	
 private:
 	boost::asio::io_service m_io;
 

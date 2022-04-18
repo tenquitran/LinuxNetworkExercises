@@ -38,14 +38,21 @@ int main(int argc, char* argv[])
 	{
 #if 0
 		// TODO: temp
+		std::cout << "Port: " << port << std::endl;
 		asio::io_service io;
 		asio::ip::tcp::endpoint ep(asio::ip::address_v4::any(), port);
 	  	asio::ip::tcp::acceptor acceptor(io, ep);
+
+	  	acceptor.listen();
+	  	
+	  	//io.run();
 
 	  	asio::ip::tcp::socket sock(io);
 	
 		acceptor.async_accept(sock, 
 			[] (const system::error_code& err) {
+				std::cout << "Inside" << std::endl;
+			
 				if (0 != err.value())
 				{
 					std::cerr << __FUNCTION__ << ": error: " << err.message() << '\n';
@@ -55,6 +62,8 @@ int main(int argc, char* argv[])
 					std::cout << __FUNCTION__ << " : accepted" << std::endl;
 				}
 			});
+		
+		io.run();
 			
 		std::cout << "After async_accept()" << std::endl;
 

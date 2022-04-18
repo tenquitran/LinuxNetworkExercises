@@ -78,7 +78,7 @@ void Server::startAccepting()
 {
 	asio::ip::tcp::socket sock(m_io);
 
-#if 1
+#if 0
 	// TODO: temp: sync accept
 	m_acceptor.accept(sock);
 	handleClient(sock);
@@ -87,18 +87,22 @@ void Server::startAccepting()
 	m_acceptor.async_accept(sock, 
 	
 #if 1
-		[] (const system::error_code& err) {
+		//[this, &sock] (const system::error_code& err) {
+		[] (const system::error_code& err) {		
 			if (0 != err.value())
 			{
-				std::cerr << __FUNCTION__ << ": error: " << err.message() << '\n';
+				std::cerr << "async_accept() error: " << err.value() << " (" << err.message() << ")\n";
 			}
 			else
 			{
-				std::cout << __FUNCTION__ << " : accepted" << std::endl;
+				std::cout << "async_accept() success" << std::endl;
 			}
 		});
 #else
 	acceptHandler);
+	
+	// TODO: temp
+	std::cout << "After async_accept()" << std::endl;
 #endif
 
 #endif
@@ -164,43 +168,17 @@ void Server::handleClient(asio::ip::tcp::socket& sock)
 		
 	buff[TimeMessageLength - 1] = '\0';
 	
-#if 0
-	async_write(sock, 
-		asio::buffer(buff, TimeMessageLength), 
-		[this](const system::error_code& err, std::size_t cbSent) {
-			onSent(err, cbSent);
-			}
-		);
-#else
 	async_write(sock, 
 		asio::buffer(buff, TimeMessageLength), 
 		[] (const system::error_code& err, std::size_t cbSent) {
-			Server::tmp2.store(22);
-		
 			if (0 != err.value())
 			{
-				std::cerr << __FUNCTION__ << ": error: " << err.message() << '\n';
-				return;
+				std::cerr << "async_write() failed: " << err.message() << '\n';
 			}
-			
-			std::cout << cbSent << " bytes were sent to the client" << std::endl;
+			else
+			{
+				std::cout << cbSent << " bytes were sent to the client" << std::endl;
+			}
 		});
-	
-	// TODO: temp
-	std::cout << "After async_write()" << std::endl;
-#endif
-}
-
-void Server::onSent(const system::error_code& err, std::size_t cbSent)
-{
-	Server::tmp2.store(22);
-
-	if (0 != err.value())
-	{
-		std::cerr << __FUNCTION__ << ": error: " << err.message() << '\n';
-		return;
-	}
-	
-	std::cout << cbSent << " bytes were sent to the client" << std::endl;
 }
 
