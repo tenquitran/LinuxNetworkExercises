@@ -23,12 +23,12 @@ public:
 private:
 	void startAccepting();
 
-	void onAccept(const boost::system::error_code& err, 
-		boost::asio::ip::tcp::socket& sock);
+	void onAccept(std::shared_ptr<boost::asio::ip::tcp::socket>& sock, 
+		const boost::system::error_code& err);
 
 	void close();
 	
-	void handleClient(boost::asio::ip::tcp::socket& sock);
+	void handleClient(std::shared_ptr<boost::asio::ip::tcp::socket>& sock);
 	
 private:
 	boost::asio::io_service m_io;

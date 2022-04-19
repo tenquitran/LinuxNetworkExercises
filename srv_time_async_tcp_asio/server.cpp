@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstdio>
 #include <time.h>
+//#include <boost/bind/bind.hpp>
 #include "server.h"
 #include "../common.h"
 
@@ -61,76 +62,31 @@ void Server::run()
 	m_io.run();
 }
 
-// TODO: temp
-void acceptHandler(const system::error_code& err)
+void Server::startAccepting()
+{
+	std::shared_ptr<asio::ip::tcp::socket> sock = std::make_shared<asio::ip::tcp::socket>(m_io);
+
+	m_acceptor.async_accept(*sock.get(), 
+		[this, &sock](const system::error_code& err) {
+			onAccept(sock, err);
+		});
+}
+
+void Server::onAccept(std::shared_ptr<boost::asio::ip::tcp::socket>& sock, 
+	const boost::system::error_code& err)
 {
 	if (0 != err.value())
 	{
-		std::cerr << __FUNCTION__ << ": error: " << err.message() << '\n';
-	}
-	else
-	{
-		std::cout << __FUNCTION__ << " : accepted" << std::endl;
-	}
-}
-
-void Server::startAccepting()
-{
-	asio::ip::tcp::socket sock(m_io);
-
-#if 0
-	// TODO: temp: sync accept
-	m_acceptor.accept(sock);
-	handleClient(sock);
-#else
-	// TODO: temp
-	m_acceptor.async_accept(sock, 
-	
-#if 1
-		//[this, &sock] (const system::error_code& err) {
-		[] (const system::error_code& err) {		
-			if (0 != err.value())
-			{
-				std::cerr << "async_accept() error: " << err.value() << " (" << err.message() << ")\n";
-			}
-			else
-			{
-				std::cout << "async_accept() success" << std::endl;
-			}
-		});
-#else
-	acceptHandler);
-	
-	// TODO: temp
-	std::cout << "After async_accept()" << std::endl;
-#endif
-
-#endif
-
-	// TODO: temp
-#if 0	
-	m_acceptor.async_accept(sock, 
-		[this, &sock] (const system::error_code& err) {
-			onAccept(err, sock);
-		});
-#endif
-}
-
-void Server::onAccept(const system::error_code& err, asio::ip::tcp::socket& sock)
-{
-	// TODO: temp
-	std::cout << "Entering " << __FUNCTION__ << std::endl;
-
-	if (0 == err.value())
-	{
-		handleClient(sock);
-	}
-	else
-	{
-		std::cerr << __FUNCTION__ << ": error: " << err.message() << '\n';
+		std::cerr << __FUNCTION__ << ": error: " << err.value() << " (" << err.message() << ")\n";
 		return;
 	}
 	
+	std::cout << __FUNCTION__ << " success" << std::endl;
+	
+	// TODO: temp
+	handleClient(sock);
+	
+#if 0
 	if (m_shouldStop.load())
 	{
 		close();
@@ -139,13 +95,14 @@ void Server::onAccept(const system::error_code& err, asio::ip::tcp::socket& sock
 	{
 		startAccepting();
 	}
+#endif
 }
 
-void Server::handleClient(asio::ip::tcp::socket& sock)
+void Server::handleClient(std::shared_ptr<boost::asio::ip::tcp::socket>& sock)
 {
-	std::string clientIp = sock.remote_endpoint().address().to_string();
+	std::string clientIp = sock->remote_endpoint().address().to_string();
 			
-	unsigned short clientPort = sock.remote_endpoint().port();
+	unsigned short clientPort = sock->remote_endpoint().port();
 			
 	std::cout << "Accepted client connection: " << clientIp << ":" << clientPort << std::endl;
 	
@@ -168,7 +125,7 @@ void Server::handleClient(asio::ip::tcp::socket& sock)
 		
 	buff[TimeMessageLength - 1] = '\0';
 	
-	async_write(sock, 
+	async_write(*sock.get(), 
 		asio::buffer(buff, TimeMessageLength), 
 		[] (const system::error_code& err, std::size_t cbSent) {
 			if (0 != err.value())
