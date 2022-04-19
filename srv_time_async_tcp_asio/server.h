@@ -11,7 +11,7 @@ public:
 	
 	virtual ~Server();
 	
-	void start();
+	bool start();
 	
 	void run();
 	
@@ -21,6 +21,8 @@ public:
 	Server& operator=(const Server&) = delete;
 	
 private:
+	static void* tpRun(void *arg);
+
 	void startAccepting();
 
 	void onAccept(std::shared_ptr<boost::asio::ip::tcp::socket>& sock, 
@@ -40,6 +42,8 @@ private:
 	boost::asio::ip::tcp::acceptor m_acceptor;
 	
 	std::atomic<bool> m_shouldStop;
+	
+	pthread_t m_tid = {};
 };
 
 #endif

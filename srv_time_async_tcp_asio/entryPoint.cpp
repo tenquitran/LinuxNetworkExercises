@@ -70,17 +70,24 @@ int main(int argc, char* argv[])
 		sleep(10);
 #else
 		Server srv(port);
-		srv.start();
-		srv.run();
+		
+		if (srv.start())
+		{
+			return 3;
+		}
+		
+		//srv.run();
+		
 		// TODO: temp
 		sleep(10);
+		
 		srv.stop();
 #endif
 	}
 	catch (system::system_error& ex)
 	{
 		std::cerr << "Exception: " << ex.what() << '\n';
-		return 3;
+		return 4;
 	}
 
 	return 0;

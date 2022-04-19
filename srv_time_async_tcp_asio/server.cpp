@@ -25,13 +25,38 @@ Server::~Server()
 	close();
 }
 
-void Server::start()
+void* Server::tpRun(void *arg)
+{
+	Server *pThis = (Server *)arg;
+
+	// TODO: implement
+
+	return 0;
+}
+
+bool Server::start()
 {
 	std::cout << "Server is starting..." << std::endl;
 
+#if 0
+	int res = pthread_create(&m_tid, nullptr, &tpRun, this);
+			
+	if (0 != res)
+	{
+		std::cerr << "Failed to create thread: " << res << '\n';
+		return false;
+	}
+#endif
+
+#if 1
 	m_acceptor.listen();
 
 	startAccepting();
+	
+	m_io.run();
+#endif
+
+	return true;
 }
 
 void Server::stop()
