@@ -1,17 +1,12 @@
 #include <iostream>
 #include <cstdio>
 #include <time.h>
-//#include <boost/bind/bind.hpp>
 #include "server.h"
 #include "../common.h"
 
 ///////////////////////////////////////////////////////////////////////
 
 using namespace boost;
-
-///////////////////////////////////////////////////////////////////////
-
-std::atomic<int> Server::tmp2;
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -23,8 +18,6 @@ Server::Server(unsigned short port)
 	  m_acceptor(m_io, m_endpoint)
 {
 	m_shouldStop.store(false);
-	
-	tmp2.store(1);
 }
 
 Server::~Server()
@@ -43,14 +36,14 @@ void Server::start()
 
 void Server::stop()
 {
-	std::cout << "Server is stopping..." << std::endl;
+	std::cout << "Stopping the server..." << std::endl;
 
 	m_shouldStop.store(true);
 }
 
 void Server::close()
 {
-	std::cout << "tmp2 = " << tmp2.load() << std::endl;
+	std::cout << "Closing the acceptor..." << std::endl;
 
 	m_acceptor.close();
 	
@@ -75,27 +68,28 @@ void Server::startAccepting()
 void Server::onAccept(std::shared_ptr<boost::asio::ip::tcp::socket>& sock, 
 	const boost::system::error_code& err)
 {
-	if (0 != err.value())
+	if (0 == err.value())
+	{
+		std::cout << __FUNCTION__ << " success" << std::endl;
+		
+		handleClient(sock);
+	}
+	else
 	{
 		std::cerr << __FUNCTION__ << ": error: " << err.value() << " (" << err.message() << ")\n";
 		return;
 	}
-	
-	std::cout << __FUNCTION__ << " success" << std::endl;
-	
-	// TODO: temp
-	handleClient(sock);
-	
-#if 0
+
 	if (m_shouldStop.load())
 	{
+		std::cout << __FUNCTION__ << ": going to close()..." << std::endl;
+		
 		close();
 	}
 	else
 	{
 		startAccepting();
 	}
-#endif
 }
 
 void Server::handleClient(std::shared_ptr<boost::asio::ip::tcp::socket>& sock)

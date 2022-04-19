@@ -40,9 +40,6 @@ private:
 	boost::asio::ip::tcp::acceptor m_acceptor;
 	
 	std::atomic<bool> m_shouldStop;
-	
-	// TODO: temp
-	static std::atomic<int> tmp2;
 };
 
 #endif
