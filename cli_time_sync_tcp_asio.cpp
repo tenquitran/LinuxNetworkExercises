@@ -44,26 +44,7 @@ int main(int argc, char* argv[])
 		
 		asio::ip::tcp::socket sock(io, protocol);
 
-#if 1
 		sock.connect(ep);
-#else
-		// TODO: temp, async connect
-		sock.async_connect(ep, 
-			[] (const system::error_code& err) {
-				if (0 != err.value())
-				{
-					std::cerr << "Connection error: " << err.message() << '\n';
-				}
-				else
-				{
-					std::cout << "Connected" << std::endl;
-				}
-			});
-		
-		std::cout << "After async_connect()" << std::endl;
-		sleep(5);
-		return 0;    // TODO: temp
-#endif
 
 		std::string response = receiveData(sock);
 		
