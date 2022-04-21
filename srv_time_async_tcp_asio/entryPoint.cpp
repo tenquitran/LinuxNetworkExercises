@@ -36,53 +36,11 @@ int main(int argc, char* argv[])
 	
 	try
 	{
-#if 0
-		// TODO: temp
-		std::cout << "Port: " << port << std::endl;
-		asio::io_service io;
-		asio::ip::tcp::endpoint ep(asio::ip::address_v4::any(), port);
-	  	asio::ip::tcp::acceptor acceptor(io, ep);
-
-	  	acceptor.listen();
-	  	
-	  	//io.run();
-
-	  	asio::ip::tcp::socket sock(io);
-	
-		acceptor.async_accept(sock, 
-			[] (const system::error_code& err) {
-				std::cout << "Inside" << std::endl;
-			
-				if (0 != err.value())
-				{
-					std::cerr << __FUNCTION__ << ": error: " << err.message() << '\n';
-				}
-				else
-				{
-					std::cout << __FUNCTION__ << " : accepted" << std::endl;
-				}
-			});
-		
-		io.run();
-			
-		std::cout << "After async_accept()" << std::endl;
-
-		sleep(10);
-#else
 		Server srv(port);
 		
-		if (srv.start())
-		{
-			return 3;
-		}
+		srv.start();
 		
-		//srv.run();
-		
-		// TODO: temp
-		sleep(10);
-		
-		srv.stop();
-#endif
+		srv.run();
 	}
 	catch (system::system_error& ex)
 	{

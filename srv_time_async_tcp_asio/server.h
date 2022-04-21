@@ -1,6 +1,7 @@
 #ifndef _SERVER_H
 #define _SERVER_H
 
+#include <map>
 #include <boost/asio.hpp>
 
 
@@ -11,26 +12,24 @@ public:
 	
 	virtual ~Server();
 	
-	bool start();
+	void start();
 	
 	void run();
-	
-	void stop();
 	
 	Server(const Server&) = delete;
 	Server& operator=(const Server&) = delete;
 	
 private:
-	static void* tpRun(void *arg);
-
 	void startAccepting();
 
-	void onAccept(std::shared_ptr<boost::asio::ip::tcp::socket>& sock, 
+	void onAccept(unsigned int sockId, 
+		boost::asio::ip::tcp::socket& sock, 
 		const boost::system::error_code& err);
 
 	void close();
-	
-	void handleClient(std::shared_ptr<boost::asio::ip::tcp::socket>& sock);
+
+	void handleClient(unsigned int sockId, 
+		boost::asio::ip::tcp::socket& sock);
 	
 private:
 	boost::asio::io_service m_io;
@@ -41,9 +40,12 @@ private:
 	
 	boost::asio::ip::tcp::acceptor m_acceptor;
 	
-	std::atomic<bool> m_shouldStop;
+	// Client sockets.
+	// Key: unique identifier of the socket; value: socket.
+	std::map<unsigned int, boost::asio::ip::tcp::socket> m_clientSockets;
 	
-	pthread_t m_tid = {};
+	// Current socket identifier.
+	unsigned int m_socketId = {};
 };
 
 #endif

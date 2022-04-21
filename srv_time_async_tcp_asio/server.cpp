@@ -17,7 +17,6 @@ Server::Server(unsigned short port)
 	  m_endpoint(asio::ip::address_v4::any(), m_port),
 	  m_acceptor(m_io, m_endpoint)
 {
-	m_shouldStop.store(false);
 }
 
 Server::~Server()
@@ -25,51 +24,17 @@ Server::~Server()
 	close();
 }
 
-void* Server::tpRun(void *arg)
+void Server::start()
 {
-	Server *pThis = (Server *)arg;
+	std::cout << "Server is starting (press Ctrl+C to stop it)..." << std::endl;
 
-	// TODO: implement
-
-	return 0;
-}
-
-bool Server::start()
-{
-	std::cout << "Server is starting..." << std::endl;
-
-#if 0
-	int res = pthread_create(&m_tid, nullptr, &tpRun, this);
-			
-	if (0 != res)
-	{
-		std::cerr << "Failed to create thread: " << res << '\n';
-		return false;
-	}
-#endif
-
-#if 1
 	m_acceptor.listen();
 
 	startAccepting();
-	
-	m_io.run();
-#endif
-
-	return true;
-}
-
-void Server::stop()
-{
-	std::cout << "Stopping the server..." << std::endl;
-
-	m_shouldStop.store(true);
 }
 
 void Server::close()
 {
-	std::cout << "Closing the acceptor..." << std::endl;
-
 	m_acceptor.close();
 	
 	std::cout << "Acceptor is closed" << std::endl;
@@ -82,47 +47,40 @@ void Server::run()
 
 void Server::startAccepting()
 {
-	std::shared_ptr<asio::ip::tcp::socket> sock = std::make_shared<asio::ip::tcp::socket>(m_io);
+	m_clientSockets.insert(std::make_pair(++m_socketId, asio::ip::tcp::socket(m_io)));
+	
+	std::cout << "Socket " << m_socketId << " created" << std::endl;
 
-	m_acceptor.async_accept(*sock.get(), 
-		[this, &sock](const system::error_code& err) {
-			onAccept(sock, err);
+	m_acceptor.async_accept(m_clientSockets.at(m_socketId), 
+		[this](const system::error_code& err) {
+			onAccept(m_socketId, m_clientSockets.at(m_socketId), err);
 		});
 }
 
-void Server::onAccept(std::shared_ptr<boost::asio::ip::tcp::socket>& sock, 
-	const boost::system::error_code& err)
+void Server::onAccept(unsigned int sockId, 
+	asio::ip::tcp::socket& sock, 
+	const system::error_code& err)
 {
 	if (0 == err.value())
 	{
 		std::cout << __FUNCTION__ << " success" << std::endl;
-		
-		handleClient(sock);
+
+		handleClient(sockId, sock);
 	}
 	else
 	{
 		std::cerr << __FUNCTION__ << ": error: " << err.value() << " (" << err.message() << ")\n";
-		return;
 	}
 
-	if (m_shouldStop.load())
-	{
-		std::cout << __FUNCTION__ << ": going to close()..." << std::endl;
-		
-		close();
-	}
-	else
-	{
-		startAccepting();
-	}
+	startAccepting();
 }
 
-void Server::handleClient(std::shared_ptr<boost::asio::ip::tcp::socket>& sock)
+void Server::handleClient(unsigned int sockId, asio::ip::tcp::socket& sock)
 {
-	std::string clientIp = sock->remote_endpoint().address().to_string();
-			
-	unsigned short clientPort = sock->remote_endpoint().port();
-			
+	std::string clientIp = sock.remote_endpoint().address().to_string();
+	
+	unsigned short clientPort = sock.remote_endpoint().port();
+
 	std::cout << "Accepted client connection: " << clientIp << ":" << clientPort << std::endl;
 	
 	// Asynchronously send to the client a string representing current time.
@@ -143,8 +101,8 @@ void Server::handleClient(std::shared_ptr<boost::asio::ip::tcp::socket>& sock)
 		loc->tm_sec);
 		
 	buff[TimeMessageLength - 1] = '\0';
-	
-	async_write(*sock.get(), 
+
+	async_write(sock, 
 		asio::buffer(buff, TimeMessageLength), 
 		[] (const system::error_code& err, std::size_t cbSent) {
 			if (0 != err.value())
@@ -156,5 +114,9 @@ void Server::handleClient(std::shared_ptr<boost::asio::ip::tcp::socket>& sock)
 				std::cout << cbSent << " bytes were sent to the client" << std::endl;
 			}
 		});
+
+	m_clientSockets.erase(sockId);
+	
+	std::cout << "Socket " << sockId << " deleted" << std::endl;
 }
 
