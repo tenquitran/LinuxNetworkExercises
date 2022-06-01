@@ -3,12 +3,14 @@
 
 int main(int argc, char* argv[])
 {
-	if (argc < 2)
+	if (argc < 3)
 	{
 		std::cerr << "Usage:\n\n" 
-		          << argv[0] << " <ip_address>" << std::endl;
+		          << argv[0] << " <ip_address> <port>" << std::endl;
 		return 1;
 	}
+	
+	int port = std::stoi(argv[2]);
 	
 	int sock = socket(AF_INET, SOCK_STREAM, 0);
 	
@@ -22,7 +24,7 @@ int main(int argc, char* argv[])
 	
 	memset(&srvAddr, 0, sizeof(srvAddr));
 	srvAddr.sin_family = AF_INET;
-	srvAddr.sin_port   = htons(13);
+	srvAddr.sin_port   = htons(port);
 	
 	if (inet_pton(AF_INET, argv[1], &srvAddr.sin_addr) < 1)
 	{
