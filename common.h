@@ -17,6 +17,9 @@
 // Maximum line length.
 const size_t MAX_LINE = 4096;
 
+// Backlog (the 2nd argument to listen().
+const int LISTEN_Q = 1024;
+
 ///////////////////////////////////////////////////////////////////////
 
 // Time server/client: data length in bytes.
@@ -29,9 +32,16 @@ const uint16_t TimeMessageLength = 20;
 // Display help on the command-line arguments usage (client version).
 void showUsageCli(const char * const exeName);
 
+// Display help on the command-line arguments usage (server version).
+void showUsageSrv(const char * const exeName);
+
 // Parse the command-line arguments (client version).
 bool parseArgumentsCli(int argc, char* argv[],
 	std::string& ipAddress, unsigned short& port);
+
+// Parse the command-line arguments (server version).
+bool parseArgumentsSrv(int argc, char* argv[],
+	unsigned short& port);
 
 ///////////////////////////////////////////////////////////////////////
 

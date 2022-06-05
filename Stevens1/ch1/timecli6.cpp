@@ -1,6 +1,9 @@
 #include "../../common.h"
 
 
+// Usage example for the loopback address and port 9988:
+//
+// $ ./timecli6 ::1 9988
 int main(int argc, char* argv[])
 {
 	std::string ipAddress;
@@ -12,7 +15,7 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 	
-	int sock = socket(AF_INET, SOCK_STREAM, 0);
+	int sock = socket(AF_INET6, SOCK_STREAM, 0);
 	
 	if (-1 == sock)
 	{
@@ -20,13 +23,13 @@ int main(int argc, char* argv[])
 		return 2;
 	}
 	
-	sockaddr_in srvAddr;
+	sockaddr_in6 srvAddr;
 	
 	memset(&srvAddr, 0, sizeof(srvAddr));
-	srvAddr.sin_family = AF_INET;
-	srvAddr.sin_port   = htons(port);
+	srvAddr.sin6_family = AF_INET6;
+	srvAddr.sin6_port   = htons(port);
 	
-	if (inet_pton(AF_INET, ipAddress.c_str(), &srvAddr.sin_addr) < 1)
+	if (inet_pton(AF_INET6, ipAddress.c_str(), &srvAddr.sin6_addr) < 1)
 	{
 		perror("inet_pton()");
 		return 3;
