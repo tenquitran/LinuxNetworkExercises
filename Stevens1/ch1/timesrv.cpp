@@ -49,6 +49,8 @@ int main(int argc, char* argv[])
 	const size_t CbBuff = 100;
 	char buff[CbBuff];
 	
+	char addrCli[INET_ADDRSTRLEN];
+	
 	while (true)
 	{
 		sockaddr_in cliAddr;
@@ -58,12 +60,12 @@ int main(int argc, char* argv[])
 	
 		// Connected socket.
 		int cnSock = accept(lsSock, (sockaddr *)&cliAddr, &len);
+
+		inet_ntop(AF_INET, &(cliAddr.sin_addr), addrCli, INET_ADDRSTRLEN);
 		
-		char addrBuff[INET_ADDRSTRLEN];
+		unsigned short portCli = ntohs(cliAddr.sin_port);
 		
-		inet_ntop(AF_INET, &(cliAddr.sin_addr), addrBuff, INET_ADDRSTRLEN);
-		
-		std::cout << "Client connection: " << addrBuff << std::endl;
+		std::cout << "Client connection: " << addrCli << ":" << portCli << std::endl;
 		
 		time_t tm = time(nullptr);
 
