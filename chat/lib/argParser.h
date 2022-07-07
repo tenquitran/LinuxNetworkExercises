@@ -12,8 +12,11 @@ public:
 	ArgParser() = default;
 
 	// Parse the command-line arguments.
+	// Parameters: isServer - true for server, false for client;
+	//             argc     - number of command-line arguments;
+	//             argv     - command-line arguments.
 	// Returns: true on success, false otherwise.
-	bool parse(int argc, char *argv[]);
+	bool parse(bool isServer, int argc, char *argv[]);
 	
 	// Get IP address.
 	std::string getIpAddress() const;

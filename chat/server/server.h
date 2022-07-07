@@ -8,18 +8,13 @@
 class Server
 {
 public:
-	Server() = default;
+	// Parameters: port - port number.
+	explicit Server(in_port_t port);
 
 	// Initialize the server.
-	// Parameters: ipAddress - IP address;
-	//             port      - port number.
 	// Returns: true on success, false otherwise.
-	bool initialize(const std::string& ipAddress, in_port_t port);
-	
-	// Display usage info.
-	// Parameters: appName - program name.
-	void showUsage(const char * appName) const;
-	
+	bool initialize();
+
 	// Start the server.
 	// Returns: true on success, false otherwise.
 	bool launch();
@@ -29,9 +24,6 @@ private:
 	Server& operator=(const Server&) = delete;
 
 private:
-	// IP address.
-	std::string m_ipAddress;
-	
 	// Port number.
 	in_port_t m_port = {};
 };
