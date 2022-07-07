@@ -3,7 +3,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 
-bool Server::initialize(const Arguments& args)
+bool Server::initialize(const std::string& ipAddress, in_port_t port)
 {
 	// TODO: stub
 	return false;

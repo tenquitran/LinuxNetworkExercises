@@ -1,5 +1,5 @@
 all: srv
 
 srv: entryPoint.cpp
-	g++ -Wall argParser.cpp server.cpp entryPoint.cpp -o srv
+	g++ -Wall ../lib/argParser.cpp server.cpp entryPoint.cpp -o srv
 
