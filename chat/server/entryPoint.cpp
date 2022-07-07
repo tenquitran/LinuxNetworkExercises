@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
 		return 2;
 	}
 
-	in_port_t port   = ap.getPort();
+	in_port_t port = ap.getPort();
 	
 	std::cout << "Command-line arguments parsed. "
                  "Port number: " << port << std::endl;
